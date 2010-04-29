@@ -1,0 +1,12 @@
+*/bin
+*/Bin
+*/obj
+*/Obj
+*.suo
+*.ncb
+*.cache
+*.user
+*.lnk
+obj/
+SilverlightToolKitSample/Binaries/
+SilverlightToolKitSample/*/ClientBin/
