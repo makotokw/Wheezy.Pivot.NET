@@ -8,7 +8,7 @@ Wheezy.Pivot, iTunesPivotCollectionCreator
 iTunesPivotCollectionCreator is tool (no GUI) to create track collection with cover art from iTunes library.  
 It depends on iTunes Windows COM SDK.
 
-<object width="425" height="344"><param name="movie" value="http://www.youtube.com/v/F2foa4aBn_w&hl=en&fs=1"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/F2foa4aBn_w&hl=en&fs=1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="344"></embed></object>
+Demo: <http://www.youtube.com/watch?v=F2foa4aBn_w>
 
 How to see your iTunes library on Pivot.
 ==============
