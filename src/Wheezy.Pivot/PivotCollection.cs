@@ -46,7 +46,7 @@ namespace Wheezy.Pivot
             this.DziCreator = this.CreateDeepZoomImageCreator();
             this.DziCreator.ServerFormat = ServerFormats.Default;
             this.DziCreator.TileFormat = ImageFormat.AutoSelect;
-            this.DziCreator.TileSize = 256;
+            this.DziCreator.TileSize = 254;
             this.DziCreator.MaxLevel = 8;
             this.DziCreator.ImageQuality = 0.95D;
             this.DziCreator.CopyMetadata = true;
@@ -139,6 +139,7 @@ namespace Wheezy.Pivot
         {
             var targetDir = Path.GetDirectoryName(pathName);
             var imageBase = Path.GetFileNameWithoutExtension(pathName) + ".dzc";
+            var imageDir = Path.GetFileNameWithoutExtension(pathName) + "_files";
             if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
 #if DEBUG
             using (var writer = new DebugWriter(pathName))
@@ -159,7 +160,7 @@ namespace Wheezy.Pivot
                                         ;
                     string head = string.Format(headFormat,
                         this.CollectionName,
-                        (this.AdditionalSearchText != string.Empty) ? string.Format("p:AdditionalSearchText=\"{1}\"", this.AdditionalSearchText) : "", 
+                        (this.AdditionalSearchText != string.Empty) ? string.Format(" p:AdditionalSearchText=\"{0}\"", this.AdditionalSearchText) : "", 
                         SchemeVersion);
                     writer.Write(head);
                 }
@@ -208,6 +209,11 @@ namespace Wheezy.Pivot
                     writer.Write("</Items>");
                     if (dzImages.Count > 0)
                     {
+                        try
+                        {
+                            Directory.Delete(imageDir, true);
+                        }
+                        catch (Exception) { }
                         this.DzcCreator.Create(dzImages, targetDir + Path.DirectorySeparatorChar + imageBase);
                     }
                 }
