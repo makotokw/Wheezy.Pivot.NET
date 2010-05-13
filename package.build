@@ -18,8 +18,9 @@
 				<include name="*.dll"/>
 				<include name="*.exe"/>
 			</fileset>
-			<fileset basedir="${src}">
-				<include name="*.txt"/>
+			<fileset basedir=".">
+				<include name="README*"/>
+        <include name="LICENSE*"/>
 			</fileset>
 		</zip>
 	</target>

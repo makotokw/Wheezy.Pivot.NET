@@ -18,7 +18,9 @@ How to see your iTunes library on Pivot.
 1. Launch iTunes and import your contents to iTunes.
 1. In iTunes, attach cover art to a content.  
 Note: No cover art contents are not included in collection.
-1. Download iTunesPivotCollectionCreator, uncompress and execute it.
+1. Download [iTunesPivotCollectionCreator](http://github.com/makotokw/Wheezy.Pivot/downloads), uncompress it.
+1. Execute iTunesPivotCollectionCreator.exe while iTunes is running.  
+Then the tool outputs data to current directory.
 1. Upload two files and one directory to your server.  
   - iTunesLibrary_files/
   - iTunesLibrary.cxml
