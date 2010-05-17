@@ -187,7 +187,7 @@ namespace Wheezy.Pivot
                     writer.Write(string.Format("<Items ImgBase=\"{0}\">", imageBase));
                     foreach (var item in this)
                     {
-                        var collectionItem = new Item(index++, item);
+                        var collectionItem = new Item(index, item);
                         if (collectionItem.Image != null)
                         {
                             collectionItem.CreateFacets(collectionFacets);
@@ -195,14 +195,15 @@ namespace Wheezy.Pivot
                             var imageInfo = this.createDeepZoomImage(dzImageTargetDir, collectionItem);
                             if (imageInfo != null)
                             {
-                                dzImages.Add(imageInfo.Value);                                
+                                dzImages.Add(imageInfo.Value);
+                                writer.Write(collectionItem.ToString()); // TODO: 
+                                index++;
                             }
                             else
                             {
                                 // TODO: 
-                            }
-
-                            writer.Write(collectionItem.ToString());
+                                Console.WriteLine("DeepZoomImage can not be created for " + collectionItem.Name);
+                            }                            
                         }
                         Console.Write(".");
                     }
