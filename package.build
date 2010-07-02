@@ -16,8 +16,17 @@
 		<zip zipfile="${dist}/${version}/${project.name}_${version}.zip">
 			<fileset basedir="${src}/${project.name}/bin/${build.config}">
 				<include name="*.dll"/>
-				<include name="*.exe"/>
+				<include name="${project.name}.exe"/>
 			</fileset>
+      <fileset basedir="${src}/iTunesPivotCollectionViewer" prefix="html">
+        <include name="*.html"/>
+      </fileset>
+      <fileset basedir="${src}/Wheezy.Web" prefix="html">
+        <include name="*.js"/>
+      </fileset>
+      <fileset basedir="${src}/iTunesPivotCollectionViewer/bin/${build.config}" prefix="html">
+        <include name="*.xap"/>
+      </fileset>
 			<fileset basedir=".">
 				<include name="README*"/>
         <include name="LICENSE*"/>

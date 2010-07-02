@@ -107,7 +107,8 @@ namespace Wheezy.Pivot
                     return null;
                 }
                 string deepZoomImage = destination + Path.DirectorySeparatorChar + collectionItem.ImageId;
-                var info = new SurrogateImageInfo(imagePathName, deepZoomImage + ".xml");
+                // xmlImage should be URI for Silverlight PivotViewer
+                var info = new SurrogateImageInfo(imagePathName, new Uri(deepZoomImage + ".xml").ToString());
                 if (!exists)
                 {
                     collectionItem.ImageId = imageIds.Count;

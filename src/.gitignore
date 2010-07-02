@@ -7,6 +7,4 @@
 *.cache
 *.user
 *.lnk
-obj/
-SilverlightToolKitSample/Binaries/
-SilverlightToolKitSample/*/ClientBin/
+*/ClientBin/

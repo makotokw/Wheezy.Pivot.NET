@@ -55,6 +55,7 @@
   <ItemGroup>
     <None Include="..\..\package.build">
       <Link>package.build</Link>
+      <SubType>Designer</SubType>
     </None>
     <None Include="..\..\version.include">
       <Link>Properties\version.include</Link>

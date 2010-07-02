@@ -23,7 +23,7 @@ namespace iTunesPivotCollectionCreator
                 var dataDir = dir + Path.DirectorySeparatorChar + "data";
                 var cacheDir = dir + Path.DirectorySeparatorChar + "cache";
                 if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
-                if (!Directory.Exists(dataDir)) Directory.CreateDirectory(dataDir);
+                if (!Directory.Exists(dataDir)) Directory.CreateDirectory(dataDir);                
 
                 //var parser = new ITunesLibraryParser();
                 //parser.ParseLibrary();
@@ -34,8 +34,21 @@ namespace iTunesPivotCollectionCreator
 
                 var itunes = new ITunesRemote();
                 itunes.Connect();
+#if DEBUG
+                pivotCollection.AddRange(itunes.GetMusicTracks(cacheDir).GetRange(0,10));
+                pivotCollection.Write(dataDir + Path.DirectorySeparatorChar + @"iTunesLibrary_d.cxml");
+#else
                 pivotCollection.AddRange(itunes.GetMusicTracks(cacheDir));
                 pivotCollection.Write(dataDir + Path.DirectorySeparatorChar + @"iTunesLibrary.cxml");
+#endif
+
+                var htmlFiles = Directory.GetFiles(dir + Path.DirectorySeparatorChar + @"Html");
+                foreach (var path in htmlFiles)
+                {
+                    var fi = new FileInfo(path);
+                    File.Copy(path, dataDir + Path.DirectorySeparatorChar + fi.Name, true);
+                }
+
             }
             catch (Exception ex)
             {

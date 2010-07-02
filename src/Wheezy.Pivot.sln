@@ -1,9 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheezy.Pivot", "Wheezy.Pivot\Wheezy.Pivot.csproj", "{BF2F89C4-D841-4541-892E-1BB1AB15966C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iTunesPivotCollectionCreator", "iTunesPivotCollectionCreator\iTunesPivotCollectionCreator.csproj", "{D458B20F-D785-428E-8523-093DB05B525B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692} = {07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iTunesPivotCollectionViewer", "iTunesPivotCollectionViewer\iTunesPivotCollectionViewer.csproj", "{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheezy.Web", "Wheezy.Web\Wheezy.Web.csproj", "{40700727-4879-4129-8701-2361ABB55A0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +42,26 @@ Global
 		{D458B20F-D785-428E-8523-093DB05B525B}.Release|Mixed Platforms.Build.0 = Release|x86
 		{D458B20F-D785-428E-8523-093DB05B525B}.Release|x86.ActiveCfg = Release|x86
 		{D458B20F-D785-428E-8523-093DB05B525B}.Release|x86.Build.0 = Release|x86
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{07AF139F-FFF9-4DA6-BDE3-D802FA9A9692}.Release|x86.ActiveCfg = Release|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{40700727-4879-4129-8701-2361ABB55A0A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
