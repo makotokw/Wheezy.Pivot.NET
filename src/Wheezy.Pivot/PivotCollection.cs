@@ -11,9 +11,9 @@ using Microsoft.DeepZoomTools;
 
 namespace Wheezy.Pivot
 {
-    public class PivotCollection<T> : List<T>
+    public class PivotCollection<T> : List<T>, IFormatProvider, ICustomFormatter
     {
-        protected static Facet[] collectionFacets;
+        protected static FacetCategory[] facetCategories;
         protected static PropertyInfo nameProperty;
         protected static PropertyInfo descriptionProperty;
         protected static PropertyInfo hrefProperty;
@@ -65,7 +65,7 @@ namespace Wheezy.Pivot
         {
             // find all properties that have a PivotItem Attribute
             IEnumerable<PropertyInfo> properties = typeof(T).GetProperties().Where(p => p.GetCustomAttributes(false).Any(a => a.GetType() == typeof(PivotItemAttribute)));
-            var facets = new List<Facet>();
+            var facetCategoryList = new List<FacetCategory>();
             foreach (var property in properties)
             {
                 var attr = property.GetCustomAttributes(typeof(PivotItemAttribute), false).FirstOrDefault() as PivotItemAttribute;
@@ -73,9 +73,18 @@ namespace Wheezy.Pivot
                 {
                     if (attr.IsFacet)
                     {
-                        var facet = new Facet { FacetName = property.Name, FacetDisplayName = attr.FacetDisplayName, FacetType = attr.FacetType };
-                        facet.FacetOccurrenceLimit = (attr.IsCollection) ? FacetOccurrenceLimits.Many : FacetOccurrenceLimits.Single;
-                        facets.Add(facet);
+                        var facetCategory = new FacetCategory {
+                            Name = attr.FacetDisplayName,
+                            Format = attr.FacetFormat,
+                            Type = attr.FacetType,
+                            IsFilterVisible = attr.IsFilterVisible,
+                            IsWordWheelVisible = attr.IsWordWheelVisible,
+                            IsMetaDataVisible = attr.IsMetaDataVisible,
+                            PropertyName = property.Name,
+                            IsCollection = attr.IsCollection,
+                        };
+                        
+                        facetCategoryList.Add(facetCategory);
                     }
                     else
                     {
@@ -90,7 +99,7 @@ namespace Wheezy.Pivot
             {
                 throw new Exception("Name is not optional. Please make one of the properties of this class as IsName=true on its PivotItem Attribute");
             }
-            collectionFacets = facets.ToArray();
+            facetCategories = facetCategoryList.ToArray();
         }
 
         virtual protected SurrogateImageInfo? createDeepZoomImage(string destination, Item collectionItem)
@@ -136,6 +145,11 @@ namespace Wheezy.Pivot
             return location;
         }
 
+        static string FormatOptionalAttribute(string attr, string value)
+        {
+            return (string.IsNullOrEmpty(value)) ? "" : string.Format(" {0}=\"{1}\"", attr, SecurityElement.Escape(value));
+        }
+
         virtual public void Write(string pathName)
         {
             var targetDir = Path.GetDirectoryName(pathName);
@@ -161,19 +175,19 @@ namespace Wheezy.Pivot
                                         ;
                     string head = string.Format(headFormat,
                         this.CollectionName,
-                        (this.AdditionalSearchText != string.Empty) ? string.Format(" p:AdditionalSearchText=\"{0}\"", this.AdditionalSearchText) : "", 
+                        FormatOptionalAttribute("p:AdditionalSearchText", this.AdditionalSearchText),
                         SchemeVersion);
                     writer.Write(head);
                 }
 
                 { // facet
-                    if (collectionFacets.Length > 0)
+                    if (facetCategories.Length > 0)
                     {
                         writer.Write("<FacetCategories>");
-                        string template = "<FacetCategory Name=\"{0}\" Type=\"{1}\" p:IsFilterVisible=\"true\" p:IsWordWheelVisible=\"true\" p:IsMetaDataVisible=\"true\"/>";
-                        foreach (Facet facet in collectionFacets)
+                        string template = "<FacetCategory Name=\"{0}\"{1} Type=\"{2}\" p:IsFilterVisible=\"{3}\" p:IsWordWheelVisible=\"{4}\" p:IsMetaDataVisible=\"{5}\"/>";
+                        foreach (FacetCategory fc in facetCategories)
                         {
-                            writer.Write(string.Format(template, facet.FacetDisplayName, facet.FacetType));
+                            writer.Write(string.Format(template, fc.Name, FormatOptionalAttribute("p:Format", fc.Format), fc.Type, fc.IsFilterVisible.ToString().ToLower(), fc.IsWordWheelVisible.ToString().ToLower(), fc.IsMetaDataVisible.ToString().ToLower()));
                         }
                         writer.Write("</FacetCategories>");
                     }
@@ -191,7 +205,7 @@ namespace Wheezy.Pivot
                         var collectionItem = new Item(index, item);
                         if (collectionItem.Image != null)
                         {
-                            collectionItem.CreateFacets(collectionFacets);
+                            collectionItem.CreateFacets(facetCategories);
 
                             var imageInfo = this.createDeepZoomImage(dzImageTargetDir, collectionItem);
                             if (imageInfo != null)
@@ -224,6 +238,24 @@ namespace Wheezy.Pivot
                     writer.Write("</Collection>");
                 }
             }
+        }
+
+        public object GetFormat(Type formatType)
+        {
+            if (formatType == typeof(bool))
+                return this;
+            else
+                return null;
+        }
+
+        public string Format(string fmt, object arg, IFormatProvider formatProvider)
+        {
+            if (arg.GetType() == typeof(bool))
+            {
+                bool value = (bool)arg;
+                return (value) ? "true" : "false"; 
+            }
+            throw new NotImplementedException(String.Format("The format of '{0}' is not supported.", arg.GetType()));
         }
 
         protected static string GetHref(T item)
@@ -292,6 +324,24 @@ namespace Wheezy.Pivot
             }
         }
 
+        #region Nested type: FacetCategory
+
+        public class FacetCategory
+        {
+            public string Name { get; set; }
+            public string Format { get; set; }
+            public FacetTypes Type { get; set; }
+            public bool IsFilterVisible { get; set; }
+            public bool IsMetaDataVisible { get; set; }
+            public bool IsWordWheelVisible { get; set; }
+            public List<object> Values { get; private set; }
+
+            public string PropertyName { get; set; }
+            public bool IsCollection { get; set; }
+        }
+
+        #endregion
+
         #region Nested type: Facet
 
         public class Facet
@@ -302,10 +352,11 @@ namespace Wheezy.Pivot
             public const string NUMBER_TEMPLATE = "<Number Value=\"{0}\"/>";
             public const string STRING_TEMPLATE = "<String Value=\"{0}\"/>";
                
-            public string FacetName { get; set; }
-            public string FacetDisplayName { get; set; }
-            public FacetTypes FacetType { get; set; }
+            public string PropertyName { get; set; }
+            public string Name { get; set; }
+            public FacetTypes Type { get; set; }
             public List<object> Values { get; private set; }
+
             protected FacetOccurrenceLimits facetOccurrenceLimit;           
             public FacetOccurrenceLimits FacetOccurrenceLimit
             {
@@ -346,7 +397,7 @@ namespace Wheezy.Pivot
             public void ReadCollection(T backingItem)
             {
                 Values.Clear();
-                var items = typeof (T).GetProperty(FacetName).GetValue(backingItem, null) as IEnumerable;
+                var items = typeof (T).GetProperty(PropertyName).GetValue(backingItem, null) as IEnumerable;
                 if (items == null)
                 {
                     return;
@@ -365,7 +416,7 @@ namespace Wheezy.Pivot
                 }
 
                 string template = "";
-                switch (FacetType)
+                switch (Type)
                 {
                     case FacetTypes.DateTime:
                         template = DATETIME_TEMPLATE;
@@ -387,11 +438,11 @@ namespace Wheezy.Pivot
                 foreach (object value in Values)
                 {
                     // check to see if clean output is on and if so indent this with three tabs
-                    if (FacetType == FacetTypes.Link)
+                    if (Type == FacetTypes.Link)
                     {
                         var link = value as FacetLink;
                         Debug.Assert(link != null, "must use PivotFacetLink object for Link");
-                        fullFacet += string.Format(template, link.Name, link.Href);
+                        fullFacet += string.Format(template, SecurityElement.Escape(link.Name), SecurityElement.Escape((link.Href)));
                     }
                     else
                     {
@@ -399,7 +450,7 @@ namespace Wheezy.Pivot
                     }
                 }
                 // put the facet into the facet template
-                return string.Format(FACET_TEMPLATE, FacetDisplayName, fullFacet);
+                return string.Format(FACET_TEMPLATE, Name, fullFacet);
             }
         }
 
@@ -431,13 +482,17 @@ namespace Wheezy.Pivot
                 associatedItem = item;
             }
 
-            public void CreateFacets(Facet[] collectionFacets)
+            public void CreateFacets(FacetCategory[] facetCategories)
             {
-                foreach (Facet facet in collectionFacets)
+                foreach (FacetCategory fc in facetCategories)
                 {
-                    var f = new Facet { FacetName = facet.FacetName, FacetDisplayName = facet.FacetDisplayName, FacetType = facet.FacetType };
-                    f.FacetOccurrenceLimit = facet.FacetOccurrenceLimit;
-                    facets.Add(facet.FacetName, f);
+                    var f = new Facet {
+                        PropertyName = fc.PropertyName,
+                        Name = fc.Name,
+                        Type = fc.Type,
+                        FacetOccurrenceLimit = (fc.IsCollection) ? FacetOccurrenceLimits.Many : FacetOccurrenceLimits.Single,
+                    };
+                    facets.Add(fc.PropertyName, f);
                 }
             }
 

@@ -16,15 +16,43 @@ namespace Wheezy.Pivot
         /// <summary>
         /// Constructor
         /// </summary>
-        public PivotItemAttribute() { }
+        public PivotItemAttribute()
+        {
+            this.IsFilterVisible = true;
+            this.IsWordWheelVisible = true;
+            this.IsMetaDataVisible = true;
+        }
+
         /// <summary>
         /// the type of facet to use for this property
         /// </summary>
         public FacetTypes FacetType { get; set; }
+
         /// <summary>
         /// the name to display instead of the name of the property for this facet.
         /// </summary>
         public string FacetDisplayName { get; set; }
+
+        /// <summary>
+        /// Optional .NET format string to be used for numeric types. It is recommended that data be rounded/truncated to match the format string to avoid potentially undesired behavior when filtering on that facet in the Pivot Graph View.
+        /// </summary>
+        public string FacetFormat { get; set; }
+
+        /// <summary>
+        /// Determines whether the category appears in the filter panel. Can only be true for categories of type String, Number, or DateTime.
+        /// </summary>
+        public bool IsFilterVisible { get; set; }
+
+        /// <summary>
+        /// Determines whether the category is visible in the info panel.
+        /// </summary>
+        public bool IsMetaDataVisible { get; set; }
+
+        /// <summary>
+        /// Determines whether the category is included in keyword filters over that collection. This attribute can only be true for categories of type String, LongString, or Link.
+        /// </summary>
+        public bool IsWordWheelVisible { get; set; }
+
         /// <summary>
         /// should the property that this attribute is associated with be treated as a facet and 
         /// mapped automatically.
