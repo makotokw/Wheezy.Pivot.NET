@@ -24,6 +24,7 @@ namespace Wheezy.Pivot
         public string AdditionalSearchText { get; set; }
         public string DziDestDirName { get; set; }
 
+        public bool IsCreateCollectionItemInParalle { get; set; }
         public CollectionCreator DzcCreator { get; protected set; }
         public ImageCreator DziCreator { get; protected set; }
         public string TempImageDir { get; set; }
@@ -57,6 +58,8 @@ namespace Wheezy.Pivot
             this.DzcCreator.TileSize = 256;
             this.DzcCreator.MaxLevel = 8;
             this.DzcCreator.ImageQuality = 0.95D;
+
+            this.IsCreateCollectionItemInParalle = (Environment.ProcessorCount >= 2);
            
             this.validateProperties();
         }
@@ -107,7 +110,7 @@ namespace Wheezy.Pivot
             try
             {
                 bool exists = false;
-                string imagePathName = getImagePathNameForDeepZoomComposer(collectionItem.ImagePath);
+                string imagePathName = getImagePathNameForDeepZoomComposer(collectionItem);
                 if (this.imageIds.ContainsKey(collectionItem.ImagePath))
                 {
                     // already created
@@ -120,9 +123,12 @@ namespace Wheezy.Pivot
                 var info = new SurrogateImageInfo(imagePathName, new Uri(deepZoomImage + ".xml").ToString());
                 if (!exists)
                 {
-                    collectionItem.ImageId = imageIds.Count;
-                    DziCreator.Create(imagePathName, deepZoomImage); // output desination.xml and desination/*/*.jpg                
-                    imageIds.Add(collectionItem.ImagePath, collectionItem.ImageId);
+                    DziCreator.Create(imagePathName, deepZoomImage); // output desination.xml and desination/*/*.jpg
+                    lock (imageIds)
+                    {
+                        collectionItem.ImageId = imageIds.Count;
+                        imageIds[collectionItem.ImagePath] = collectionItem.ImageId;
+                    }
                 }
                 return info;
             }
@@ -133,8 +139,9 @@ namespace Wheezy.Pivot
             return null;
         }
 
-        virtual protected string getImagePathNameForDeepZoomComposer(string location)
+        virtual protected string getImagePathNameForDeepZoomComposer(Item item)
         {
+            var location = item.ImagePath;
             if (location.StartsWith("http://") || location.StartsWith("https://"))
             {
                 var wc = new WebClient();
@@ -195,39 +202,79 @@ namespace Wheezy.Pivot
 
                 { // items
                     var index = 0;
+                    var progress = 0;
                     var collectionItems = new List<Item>(this.Count);
                     var dzImages = new List<Microsoft.DeepZoomTools.SurrogateImageInfo>();
                     var dzImageTargetDir = targetDir + Path.DirectorySeparatorChar + DziDestDirName;
                     if (!Directory.Exists(dzImageTargetDir)) Directory.CreateDirectory(dzImageTargetDir);
                     writer.Write(string.Format("<Items ImgBase=\"{0}\">", imageBase));
-                    foreach (var item in this)
-                    {
-                        var collectionItem = new Item(index, item);
-                        if (collectionItem.Image != null)
-                        {
-                            collectionItem.CreateFacets(facetCategories);
 
-                            var imageInfo = this.createDeepZoomImage(dzImageTargetDir, collectionItem);
-                            if (imageInfo != null)
+                    // create collection in parallel
+                    if (IsCreateCollectionItemInParalle)
+                    {
+                        var query = this.AsParallel().WithExecutionMode(ParallelExecutionMode.ForceParallelism).Select(item =>
+                        {
+                            var collectionItem = new Item(-1, item);
+                            if (collectionItem.Image != null)
                             {
-                                dzImages.Add(imageInfo.Value);
-                                writer.Write(collectionItem.ToString()); // TODO: 
-                                index++;
+                                collectionItem.CreateFacets(facetCategories);
+                                collectionItem.DeepZoomImage = this.createDeepZoomImage(dzImageTargetDir, collectionItem);
+                                if (collectionItem.DeepZoomImage == null)
+                                {
+                                    // TODO: 
+                                    Console.WriteLine("DeepZoomImage can not be created for " + collectionItem.Name);
+                                }
                             }
-                            else
+                            return collectionItem;
+                        });
+                        foreach (var collectionItem in query)
+                        {
+                            if (collectionItem.DeepZoomImage != null)
                             {
-                                // TODO: 
-                                Console.WriteLine("DeepZoomImage can not be created for " + collectionItem.Name);
-                            }                            
+                                collectionItem.Id = index++;
+                                dzImages.Add(collectionItem.DeepZoomImage.Value);
+                                writer.Write(collectionItem.ToString()); // TODO: 
+                            }
                         }
-                        Console.Write(".");
+                    }
+                    else
+                    {
+                        foreach (var item in this)
+                        {
+                            var collectionItem = new Item(index, item);
+                            if (collectionItem.Image != null)
+                            {
+                                collectionItem.CreateFacets(facetCategories);
+
+                                var imageInfo = this.createDeepZoomImage(dzImageTargetDir, collectionItem);
+                                if (imageInfo != null)
+                                {
+                                    dzImages.Add(imageInfo.Value);
+                                    writer.Write(collectionItem.ToString()); // TODO: 
+                                    index++;
+                                }
+                                else
+                                {
+                                    // TODO: 
+                                    Console.WriteLine("DeepZoomImage can not be created for " + collectionItem.Name);
+                                }
+                            }
+                            Console.Write(".");
+                            if (++progress % 30 == 0)
+                            {
+                                Console.WriteLine("");
+                            }
+                        }
                     }
                     writer.Write("</Items>");
                     if (dzImages.Count > 0)
                     {
                         try
                         {
-                            Directory.Delete(imageDir, true);
+                            if (Directory.Exists(imageDir))
+                            {
+                                Directory.Delete(imageDir, true);
+                            }
                         }
                         catch (Exception) { }
                         this.DzcCreator.Create(dzImages, targetDir + Path.DirectorySeparatorChar + imageBase);
@@ -470,6 +517,7 @@ namespace Wheezy.Pivot
                 get { return _imageId.HasValue ? _imageId.Value : Id; }
                 set { _imageId = value; }
             }
+            public SurrogateImageInfo? DeepZoomImage;
             public string Image { get { return GetImage(associatedItem); } }
             public string ImagePath { get { return imageProperty.GetValue(associatedItem, null) as string; } }
             public string Href { get { return GetHref(associatedItem); } }
