@@ -40,6 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreatorLog.cs" />
+    <Compile Include="DebugLog.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyVersionInfo.cs" />
     <Compile Include="FacetOccurrenceLimits.cs" />
     <Compile Include="FacetTypes.cs" />

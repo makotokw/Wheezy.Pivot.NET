@@ -224,6 +224,7 @@ namespace Wheezy.Pivot
                                     // TODO: 
                                     Console.WriteLine("DeepZoomImage can not be created for " + collectionItem.Name);
                                 }
+                                Console.Write(".");
                             }
                             return collectionItem;
                         });
